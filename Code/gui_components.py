@@ -29,6 +29,8 @@ def setup_main_menu(root):
     btn_list_loaned_copies = ttk.Button(main_frame, text="List Loaned Copies", command=lambda: setup_list_loaned_copies_frame(root))
     btn_list_loaned_copies.pack(fill='x', padx=20, pady=5)
 
+    btn_list_late_loans = ttk.Button(main_frame, text="List Late Book Loans", command=lambda: setup_list_late_loans_frame(root))
+    btn_list_late_loans.pack(fill='x', padx=20, pady=5)
 
     btn_list_borrowers = ttk.Button(main_frame, text="List Borrowers", command=lambda: list_borrower_info())
     btn_list_borrowers.pack(fill='x', padx=20, pady=5)
@@ -105,6 +107,48 @@ def setup_list_loaned_copies_frame(root):
 
     ttk.Button(frame, text="List Loaned Copies", command=lambda: list_copies_loaned_out(book_title_entry.get())).grid(row=1, column=1, pady=10)
     ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=1, column=0, pady=10)
+
+def setup_list_late_loans_frame(root):
+    clear_frame(root)
+    frame = ttk.Frame(root, padding="10")
+    frame.pack(fill='both', expand=True)
+    frame_stack.append(frame)
+    
+    # Configure the grid
+    frame.columnconfigure(1, weight=1)
+    frame.rowconfigure(3, weight=1)
+
+    # Date entry labels and fields
+    ttk.Label(frame, text="Start Date (YYYY-MM-DD):").grid(row=0, column=0, padx=10, pady=10, sticky='e')
+    start_date_entry = ttk.Entry(frame)
+    start_date_entry.grid(row=0, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Label(frame, text="End Date (YYYY-MM-DD):").grid(row=1, column=0, padx=10, pady=10, sticky='e')
+    end_date_entry = ttk.Entry(frame)
+    end_date_entry.grid(row=1, column=1, padx=10, pady=10, sticky='ew')
+
+    # Treeview
+    columns = ("Card No", "Borrower Name", "Book Title", "Date Out", "Due Date", "Returned Date", "Days Late", "Branch ID", "Late Fee Balance")
+
+    tree = ttk.Treeview(frame, columns=columns, show='headings')
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, anchor="center")
+    tree.grid(row=3, column=0, columnspan=2, sticky='nsew', pady=10)
+
+    # Scrollbar for Treeview
+    scrollbar = ttk.Scrollbar(frame, orient=tk.VERTICAL, command=tree.yview)
+    tree.configure(yscroll=scrollbar.set)
+    scrollbar.grid(row=3, column=2, sticky='ns')
+
+    # List and back buttons
+    ttk.Button(frame, text="List Late Loans", command=lambda: list_late_book_loans(start_date_entry.get(), end_date_entry.get(), tree)).grid(row=2, column=1, pady=10, sticky='ew')
+    ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=2, column=0, pady=10, sticky='ew')
+
+    # Set focus to the start date entry
+    start_date_entry.focus()
+
+
 
 
 # Function to go back to the previous frame or main menu

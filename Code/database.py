@@ -128,25 +128,44 @@ def list_copies_loaned_out(title):
 
 
 # List book loans that were returned late within a given due date range
-def list_late_book_loans(start_date, end_date):
+def list_late_book_loans(start_date, end_date, tree):
     conn = connect_to_db()
     cursor = conn.cursor()
+
     query = """
-    SELECT BL.*, DATEDIFF(BL.Returned_Date, BL.Due_Date) AS Days_Late
-    FROM BOOK_LOANS AS BL
-    WHERE BL.Due_Date BETWEEN %s AND %s AND BL.Returned_Date > BL.Due_Date
+    SELECT 
+        Card_No,
+        `Borrower Name`,
+        `Book Title`,
+        Date_Out,
+        Due_Date,
+        Returned_Date,
+        `Days Returned Late`,
+        Branch_Id,
+        `LateFeeBalance`
+    FROM 
+        vBookLoanInfo
+    WHERE 
+        Due_Date BETWEEN %s AND %s
+        AND `Days Returned Late` > 0
     """
     try:
         cursor.execute(query, (start_date, end_date))
         rows = cursor.fetchall()
+
         for row in rows:
-            print(f"Loan ID: {row[0]}, Days Late: {row[-1]}")
-        messagebox.showinfo("Success", "List of late book loans retrieved successfully!")
+            tree.insert("", tk.END, values=row)
+
+        if not rows:
+            tree.insert("", tk.END, values=("No Results", "", "", "", "", "", "", ""))
+
     except mysql.connector.Error as err:
-        messagebox.showerror("Error", f"Failed to list late book loans: {err}")
+        tree.insert("", tk.END, values=(f"Error: {err}", "", "", "", "", "", "", ""))
     finally:
         cursor.close()
         conn.close()
+
+
 
 def list_borrower_info(search_criteria=None):
     conn = connect_to_db()
