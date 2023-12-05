@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import date, timedelta  # Import date and timedelta for date handling
 # Import your database functions
-from database import add_borrower, check_out_book, list_borrower_info, add_book_to_all_branches, list_copies_loaned_out, list_late_book_loans
+from database import add_borrower, check_out_book, list_borrower_info, add_book_to_all_branches, list_copies_loaned_out, list_late_book_loans, list_book_info
 
 frame_stack = []
 
@@ -17,7 +17,7 @@ def setup_main_menu(root):
     main_frame.pack(fill='both', expand=True)
     frame_stack.append(main_frame)
 
-    title_label = ttk.Label(main_frame, text="Library Management System", font=('Arial', 24))
+    title_label = ttk.Label(main_frame, text="Welcome to Bibliotech!", font=('Arial', 24))
     title_label.pack(pady=20)
 
     btn_add_borrower = ttk.Button(main_frame, text="Add New Borrower", command=lambda: setup_add_borrower_frame(root))
@@ -32,10 +32,12 @@ def setup_main_menu(root):
     btn_list_late_loans = ttk.Button(main_frame, text="List Late Book Loans", command=lambda: setup_list_late_loans_frame(root))
     btn_list_late_loans.pack(fill='x', padx=20, pady=5)
 
-    btn_list_borrowers = ttk.Button(main_frame, text="List Borrowers", command=lambda: list_borrower_info())
-    btn_list_borrowers.pack(fill='x', padx=20, pady=5)
+    btn_list_borrower_info = ttk.Button(main_frame, text="List Borrower Info", command=lambda: setup_list_borrower_info_frame(root))
+    btn_list_borrower_info.pack(fill='x', padx=20, pady=5)
 
-    
+    btn_list_book_info = ttk.Button(main_frame, text="List Book Info", command=lambda: setup_list_book_info_frame(root))
+    btn_list_book_info.pack(fill='x', padx=20, pady=5)
+
 
     return main_frame
 
@@ -148,8 +150,107 @@ def setup_list_late_loans_frame(root):
     # Set focus to the start date entry
     start_date_entry.focus()
 
+def setup_list_borrower_info_frame(root):
+    clear_frame(root)
+    frame = ttk.Frame(root, padding="10")
+    frame.pack(fill='both', expand=True)
+    frame_stack.append(frame)
+
+    # Search criteria entry
+    ttk.Label(frame, text="Search by Borrower ID or Name:").grid(row=0, column=0, padx=10, pady=10)
+    search_entry = ttk.Entry(frame)
+    search_entry.grid(row=0, column=1, padx=10, pady=10, sticky='ew')
+
+    # Treeview for the results
+    columns = ("ID", "Name", "Late Fee Balance")
+    result_tree = ttk.Treeview(frame, columns=columns, show='headings')
+    for col in columns:
+        result_tree.heading(col, text=col)
+        result_tree.column(col, anchor="center")
+    result_tree.grid(row=2, column=0, columnspan=2, sticky='nsew', pady=10)
+
+    # Button to execute search
+    ttk.Button(frame, text="Search", command=lambda: search_borrower_info(search_entry.get(), result_tree)).grid(row=1, column=1, padx=10, pady=10, sticky='ew')
+
+    # Back button
+    ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=1, column=0, padx=10, pady=10, sticky='ew')
+
+    # Grid configuration for resizing
+    frame.columnconfigure(1, weight=1)
+    frame.rowconfigure(2, weight=1)
+
+    # Set focus to the search entry
+    search_entry.focus()
+
+# Function to search and update the Treeview with Borrower Information
+def search_borrower_info(criteria, tree):
+    for i in tree.get_children():
+        tree.delete(i)  # Clear the treeview
+    
+    # Call the database function and pass the treeview widget
+    list_borrower_info(criteria, tree)  # You are directly calling this function now
+
+# gui_components.py
+
+# Function to set up the 'List Book Information' frame
+def setup_list_book_info_frame(root):
+    clear_frame(root)
+    frame = ttk.Frame(root, padding="10")
+    frame.pack(fill='both', expand=True)
+    frame_stack.append(frame)
+
+    # Entry fields for search criteria
+    ttk.Label(frame, text="Borrower ID:").grid(row=0, column=0, padx=10, pady=10)
+    borrower_id_entry = ttk.Entry(frame)
+    borrower_id_entry.grid(row=0, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Label(frame, text="Book ID:").grid(row=1, column=0, padx=10, pady=10)
+    book_id_entry = ttk.Entry(frame)
+    book_id_entry.grid(row=1, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Label(frame, text="Book Title:").grid(row=2, column=0, padx=10, pady=10)
+    book_title_entry = ttk.Entry(frame)
+    book_title_entry.grid(row=2, column=1, padx=10, pady=10, sticky='ew')
+
+    # Treeview for the results
+    columns = ("Card No", "Name", "Title", "Branch ID", "Late Fee")
+    result_tree = ttk.Treeview(frame, columns=columns, show='headings')
+    for col in columns:
+        result_tree.heading(col, text=col)
+        result_tree.column(col, anchor="center")
+
+    result_tree.grid(row=4, column=0, columnspan=2, sticky='nsew', pady=10)
+
+    ttk.Button(frame, text="Search", command=lambda: search_book_info(
+        borrower_id_entry.get(),
+        book_title_entry.get(),
+        result_tree
+    )).grid(row=3, column=1, padx=10, pady=10, sticky='ew')
 
 
+    # Back button
+    ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=3, column=0, padx=10, pady=10, sticky='ew')
+
+    # Grid configuration for resizing
+    frame.columnconfigure(1, weight=1)
+    frame.rowconfigure(4, weight=1)
+
+    # Set focus to the borrower ID entry
+    borrower_id_entry.focus()
+
+def search_book_info(borrower_id, book_title, tree):
+    # Clear the treeview
+    for i in tree.get_children():
+        tree.delete(i)
+
+    # Call the database function and pass the treeview widget
+    # The database function is expected to return a list of tuples
+    books = list_book_info(borrower_id, book_title) 
+    
+    # Insert the data into the treeview
+    for book in books:
+        # The book tuple must contain exactly as many elements as there are columns
+        tree.insert("", "end", values=(book[0], book[1], book[2], book[3], book[4]))
 
 # Function to go back to the previous frame or main menu
 def go_back(root):

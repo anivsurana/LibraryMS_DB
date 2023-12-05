@@ -167,86 +167,77 @@ def list_late_book_loans(start_date, end_date, tree):
 
 
 
-def list_borrower_info(search_criteria=None):
+# database.py
+def list_borrower_info(search_criteria, tree):
     conn = connect_to_db()
     cursor = conn.cursor()
 
-    # Base query targeting the vBookLoanInfo view
     query = """
-    SELECT `Card_No`, `Borrower Name`, `LateFeeBalance`
-    FROM vBookLoanInfo
+    SELECT 
+        Card_No AS 'ID', 
+        `Borrower Name` AS 'Name', 
+        COALESCE(`LateFeeBalance`, 0) AS 'LateFeeBalance' 
+    FROM 
+        vBookLoanInfo
     """
 
-    # Modify the query based on the search criteria
+    params = ()
     if search_criteria:
-        if search_criteria.isdigit():  # Assuming search by Card_No if it's a digit
-            query += " WHERE `Card_No` = %s"
-            params = (search_criteria,)
-        else:  # Assuming search by part of the name otherwise
-            query += " WHERE `Borrower Name` LIKE %s"
-            params = ('%' + search_criteria + '%',)
-    else:
-        # If no search criteria provided, order by LateFeeBalance
-        query += " ORDER BY `LateFeeBalance` DESC"
-        params = ()
+        query += " WHERE (`Card_No` LIKE %s OR `Borrower Name` LIKE %s)"
+        params = ('%' + search_criteria + '%', '%' + search_criteria + '%')
+    query += " ORDER BY `LateFeeBalance` DESC"
 
     try:
-        cursor.execute(query, params)
+        cursor.execute(query, params if params else ())
         rows = cursor.fetchall()
-        result = "Borrower Info:\n"
         for row in rows:
-            result += f"ID: {row[0]}, Name: {row[1]}, Late Fee Balance: ${float(row[2]):.2f}\n"
-        # Here, you could return the result string or update a GUI element with the result
-        messagebox.showinfo("Borrower Info", result)
+            id, name, balance = row
+            formatted_balance = "${:,.2f}".format(balance)
+            tree.insert("", "end", values=(id, name, formatted_balance))
     except mysql.connector.Error as err:
-        messagebox.showerror("Error", f"Failed to retrieve borrower info: {err}")
+        print(f"Error: {err}")
     finally:
         cursor.close()
         conn.close()
 
 
-# # Example usage:
-# list_borrower_info()  # List all
-# list_borrower_info('123')  # Search by Card_No
-# list_borrower_info('John Doe')  # Search by name
+def list_book_info(borrower_id=None, book_title=None):
+    conn = connect_to_db()
+    cursor = conn.cursor()
 
+    query = """
+    SELECT 
+        Card_No AS 'Borrower ID', 
+        `Borrower Name` AS 'Borrower Name', 
+        `Book Title` AS 'Title', 
+        Branch_Id AS 'Branch ID', 
+        COALESCE(CONCAT('$', FORMAT(LateFeeBalance, 2)), 'Non-Applicable') AS 'Late Fee'
+    FROM 
+        vbookloaninfo
+    """
 
-# # Main GUI setup
-# def create_gui():
-#     root = tk.Tk()
-#     root.title("Library Management System")
+    params = []  # Ensure this is a list
+    conditions = []
 
-#     # Setup frames for different tasks
-#     main_frame = tk.Frame(root)
-#     add_borrower_frame = tk.Frame(root)
-#     check_out_book_frame = tk.Frame(root)
-#     # ... Additional frames for other tasks
+    if borrower_id:
+        conditions.append("Card_No = %s")
+        params.append(borrower_id)  # Append to the list
+    if book_title:
+        conditions.append("`Book Title` LIKE %s")
+        params.append(f"%{book_title}%")  # Append to the list
 
-#     # Layout frames in the same grid cell to stack them
-#     for frame in (main_frame, add_borrower_frame, check_out_book_frame):  # Add additional frames to this list
-#         frame.grid(row=0, column=0, sticky='news')
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
 
-#     # Function to raise a frame to the top for view
-#     def raise_frame(frame):
-#         frame.tkraise()
+    query += " ORDER BY `LateFeeBalance` DESC"
 
-#     # Home frame with navigation buttons
-#     # ... Add navigation buttons that call raise_frame with the appropriate frame
-
-#     # Add borrower frame with form fields and submission button
-#     # ... Add labels, entry widgets, and a button that calls add_borrower
-
-#     # Check out book frame with form fields and submission button
-#     # ... Add labels, entry widgets, and a button that calls check_out_book
-
-#     # ... Additional setup for other frames/tasks
-
-#     # Start on the main frame
-#     raise_frame(main_frame)
-
-#     return root
-
-# # Run the GUI application
-# if __name__ == "__main__":
-#     gui = create_gui()
-#     gui.mainloop()
+    try:
+        cursor.execute(query, params)  # Pass the list to the execute method
+        rows = cursor.fetchall()
+        return rows
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
