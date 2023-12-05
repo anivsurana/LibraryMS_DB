@@ -71,25 +71,32 @@ def check_out_book(book_id, branch_id, card_no, date_out, due_date):
         conn.close()
 
 
-# Add a new book to all branches
-def add_book_to_all_branches(title, book_publisher, author_name):
+def add_book_to_all_branches(title, publisher_name, author_name):
     conn = connect_to_db()
     cursor = conn.cursor()
-    # Assuming you have a function to get all branch IDs
-    branch_ids = get_all_branch_ids(cursor)
+    
     try:
+        conn.start_transaction()
+
         # Insert the new book
-        cursor.execute("INSERT INTO BOOK (Title, Book_Publisher) VALUES (%s, %s)", (title, book_publisher))
+        insert_book_query = "INSERT INTO BOOK (Title, Book_Publisher) VALUES (%s, %s)"
+        cursor.execute(insert_book_query, (title, publisher_name))
         book_id = cursor.lastrowid
+        
         # Insert the author
-        cursor.execute("INSERT INTO BOOK_AUTHORS (Book_Id, Author_Name) VALUES (%s, %s)", (book_id, author_name))
-        # Add copies to all branches
-        for branch_id in branch_ids:
-            cursor.execute("INSERT INTO BOOK_COPIES (Book_Id, Branch_Id, No_Of_Copies) VALUES (%s, %s, %s)", (book_id, branch_id, 5))
+        insert_author_query = "INSERT INTO BOOK_AUTHORS (Book_Id, Author_Name) VALUES (%s, %s)"
+        cursor.execute(insert_author_query, (book_id, author_name))
+
+        # Insert copies for each branch
+        insert_copies_query = "INSERT INTO BOOK_COPIES (Book_Id, Branch_Id, No_Of_Copies) VALUES (%s, %s, %s)"
+        for branch_id in range(1, 6):
+            cursor.execute(insert_copies_query, (book_id, branch_id, 5))
+
         conn.commit()
-        messagebox.showinfo("Success", "Book added to all branches successfully!")
+        print(f"Book '{title}' added successfully with author '{author_name}' to all branches.")
     except mysql.connector.Error as err:
-        messagebox.showerror("Error", f"Failed to add book to all branches: {err}")
+        conn.rollback()
+        print(f"Failed to add book: {err}")
     finally:
         cursor.close()
         conn.close()

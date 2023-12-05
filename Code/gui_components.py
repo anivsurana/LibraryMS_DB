@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from datetime import date, timedelta  # Import date and timedelta for date handling
 # Import your database functions
 from database import add_borrower, check_out_book, list_borrower_info, add_book_to_all_branches, list_copies_loaned_out, list_late_book_loans, list_book_info
@@ -26,6 +26,9 @@ def setup_main_menu(root):
     btn_check_out_book = ttk.Button(main_frame, text="Check Out Book", command=lambda: setup_check_out_book_frame(root))
     btn_check_out_book.pack(fill='x', padx=20, pady=5)
 
+    btn_add_book = ttk.Button(main_frame, text="Add New Book", command=lambda: setup_add_book_frame(root))
+    btn_add_book.pack(fill='x', padx=20, pady=5)
+
     btn_list_loaned_copies = ttk.Button(main_frame, text="List Loaned Copies", command=lambda: setup_list_loaned_copies_frame(root))
     btn_list_loaned_copies.pack(fill='x', padx=20, pady=5)
 
@@ -37,7 +40,6 @@ def setup_main_menu(root):
 
     btn_list_book_info = ttk.Button(main_frame, text="List Book Info", command=lambda: setup_list_book_info_frame(root))
     btn_list_book_info.pack(fill='x', padx=20, pady=5)
-
 
     return main_frame
 
@@ -95,6 +97,47 @@ def setup_check_out_book_frame(root):
     )).grid(row=4, column=1, pady=10)
 
     ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=4, column=0, pady=10)
+
+# gui_components.py
+
+def setup_add_book_frame(root):
+    clear_frame(root)
+    frame = ttk.Frame(root, padding="10")
+    frame.pack(fill='both', expand=True)
+    frame_stack.append(frame)
+
+    # Entry fields for book details
+    ttk.Label(frame, text="Book Title:").grid(row=0, column=0, padx=10, pady=10)
+    book_title_entry = ttk.Entry(frame)
+    book_title_entry.grid(row=0, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Label(frame, text="Publisher Name:").grid(row=1, column=0, padx=10, pady=10)
+    publisher_name_entry = ttk.Entry(frame)
+    publisher_name_entry.grid(row=1, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Label(frame, text="Author Name:").grid(row=2, column=0, padx=10, pady=10)
+    author_name_entry = ttk.Entry(frame)
+    author_name_entry.grid(row=2, column=1, padx=10, pady=10, sticky='ew')
+
+    ttk.Button(frame, text="Add Book", command=lambda: add_book(
+        book_title_entry.get(),
+        publisher_name_entry.get(),
+        author_name_entry.get()
+    )).grid(row=3, column=1, padx=10, pady=10, sticky='ew')
+
+    # Back button to return to the main menu
+    ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=3, column=0, padx=10, pady=10, sticky='ew')
+
+    # Grid configuration for resizing
+    frame.columnconfigure(1, weight=1)
+
+    # Set focus to the book title entry
+    book_title_entry.focus()
+
+# The function to call when the "Add Book" button is pressed
+def add_book(title, publisher_name, author_name):
+    add_book_to_all_branches(title, publisher_name, author_name)
+    messagebox.showinfo("Success", f"Book '{title}' added successfully to all branches.")
 
 # Function to set up the 'List Loaned Copies' frame
 def setup_list_loaned_copies_frame(root):
@@ -252,6 +295,8 @@ def search_book_info(borrower_id, book_title, tree):
         # The book tuple must contain exactly as many elements as there are columns
         tree.insert("", "end", values=(book[0], book[1], book[2], book[3], book[4]))
 
+
+
 # Function to go back to the previous frame or main menu
 def go_back(root):
     if frame_stack:
@@ -260,6 +305,7 @@ def go_back(root):
 
     clear_frame(root)  # Clear the screen
     setup_main_menu(root)  # Display the main menu
+
 
 
 # Main application setup
