@@ -25,12 +25,14 @@ def add_borrower(name, address, phone):
     try:
         cursor.execute(query, (name, address, phone))
         conn.commit()
-        messagebox.showinfo("Success", "Borrower added successfully!")
+        card_no = cursor.lastrowid  # Get the last inserted ID
+        messagebox.showinfo("Success", f"Borrower added successfully! Welcome, your card number is {card_no}")
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Failed to add borrower: {err}")
     finally:
         cursor.close()
         conn.close()
+
 
 # Check out a book
 def check_out_book(book_id, branch_id, card_no, date_out, due_date):
