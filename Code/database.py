@@ -34,7 +34,6 @@ def add_borrower(name, address, phone):
         conn.close()
 
 
-# Check out a book
 def check_out_book(book_id, branch_id, card_no, date_out, due_date):
     conn = connect_to_db()
     cursor = conn.cursor()
@@ -44,24 +43,33 @@ def check_out_book(book_id, branch_id, card_no, date_out, due_date):
     try:
         cursor.execute(query_loan, (book_id, branch_id, card_no, date_out, due_date))
         conn.commit()
-        print("Book checked out successfully!")
-
-        # Output updated Book_Copies
-        query_copies = "SELECT * FROM BOOK_COPIES WHERE Book_Id = %s AND Branch_Id = %s"
-        cursor.execute(query_copies, (book_id, branch_id))
-        rows = cursor.fetchall()
-        for row in rows:
-            print(f"Book_Id: {row[0]}, Branch_Id: {row[1]}, No_Of_Copies: {row[2]}")
-        
-        # Display success message
         messagebox.showinfo("Success", "Book checked out successfully!")
+
+        # Query to get the book name
+        query_book_name = "SELECT Title FROM BOOK WHERE Book_Id = %s"
+        cursor.execute(query_book_name, (book_id,))
+        book_name = cursor.fetchone()[0]
+
+        # Query to get the branch name
+        query_branch_name = "SELECT Branch_Name FROM LIBRARY_BRANCH WHERE Branch_Id = %s"
+        cursor.execute(query_branch_name, (branch_id,))
+        branch_name = cursor.fetchone()[0]
+
+        # Query to get the updated number of copies
+        query_copies = "SELECT No_Of_Copies FROM BOOK_COPIES WHERE Book_Id = %s AND Branch_Id = %s"
+        cursor.execute(query_copies, (book_id, branch_id))
+        no_of_copies = cursor.fetchone()[0]
+        
+        # Display the updated information
+        info_message = f"Book '{book_name}' checked out from '{branch_name}'.\nUpdated number of copies: {no_of_copies}"
+        messagebox.showinfo("Checkout Details", info_message)
+        
     except mysql.connector.Error as err:
-        print(f"Failed to check out book: {err}")
-        # Display error message
         messagebox.showerror("Error", f"Failed to check out book: {err}")
     finally:
         cursor.close()
         conn.close()
+
 
 # Add a new book to all branches
 def add_book_to_all_branches(title, book_publisher, author_name):
@@ -90,24 +98,34 @@ def add_book_to_all_branches(title, book_publisher, author_name):
 def list_copies_loaned_out(title):
     conn = connect_to_db()
     cursor = conn.cursor()
+
     query = """
-    SELECT BL.Branch_Id, COUNT(*) AS Copies_Loaned
+    SELECT LB.Branch_Name, COUNT(*) AS Copies_Loaned
     FROM BOOK_LOANS AS BL
     JOIN BOOK AS B ON BL.Book_Id = B.Book_Id
-    WHERE B.Title = %s
-    GROUP BY BL.Branch_Id
+    JOIN LIBRARY_BRANCH AS LB ON BL.Branch_Id = LB.Branch_Id
+    WHERE B.Title = %s AND BL.Returned_Date IS NULL
+    GROUP BY BL.Branch_Id, LB.Branch_Name
     """
     try:
         cursor.execute(query, (title,))
         rows = cursor.fetchall()
-        for row in rows:
-            print(f"Branch ID: {row[0]}, Copies Loaned: {row[1]}")
-        messagebox.showinfo("Success", "List of copies loaned out retrieved successfully!")
+
+        if rows:
+            result = f"Copies of '{title}' loaned out per branch:\n"
+            for row in rows:
+                branch_name, copies_loaned = row
+                result += f"Branch: {branch_name}, Copies Loaned: {copies_loaned}\n"
+            messagebox.showinfo("Loan Info", result)
+        else:
+            messagebox.showinfo("Loan Info", f"No copies of '{title}' are currently loaned out.")
+
     except mysql.connector.Error as err:
         messagebox.showerror("Error", f"Failed to list copies loaned out: {err}")
     finally:
         cursor.close()
         conn.close()
+
 
 # List book loans that were returned late within a given due date range
 def list_late_book_loans(start_date, end_date):

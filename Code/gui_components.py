@@ -26,8 +26,14 @@ def setup_main_menu(root):
     btn_check_out_book = ttk.Button(main_frame, text="Check Out Book", command=lambda: setup_check_out_book_frame(root))
     btn_check_out_book.pack(fill='x', padx=20, pady=5)
 
+    btn_list_loaned_copies = ttk.Button(main_frame, text="List Loaned Copies", command=lambda: setup_list_loaned_copies_frame(root))
+    btn_list_loaned_copies.pack(fill='x', padx=20, pady=5)
+
+
     btn_list_borrowers = ttk.Button(main_frame, text="List Borrowers", command=lambda: list_borrower_info())
     btn_list_borrowers.pack(fill='x', padx=20, pady=5)
+
+    
 
     return main_frame
 
@@ -85,6 +91,21 @@ def setup_check_out_book_frame(root):
     )).grid(row=4, column=1, pady=10)
 
     ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=4, column=0, pady=10)
+
+# Function to set up the 'List Loaned Copies' frame
+def setup_list_loaned_copies_frame(root):
+    clear_frame(root)
+    frame = ttk.Frame(root, padding="10")
+    frame.pack(fill='both', expand=True)
+    frame_stack.append(frame)
+
+    ttk.Label(frame, text="Enter Book Title:").grid(row=0, column=0, padx=10, pady=10)
+    book_title_entry = ttk.Entry(frame)
+    book_title_entry.grid(row=0, column=1, padx=10, pady=10)
+
+    ttk.Button(frame, text="List Loaned Copies", command=lambda: list_copies_loaned_out(book_title_entry.get())).grid(row=1, column=1, pady=10)
+    ttk.Button(frame, text="Back", command=lambda: go_back(root)).grid(row=1, column=0, pady=10)
+
 
 # Function to go back to the previous frame or main menu
 def go_back(root):
