@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `lmsystem` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `lmsystem`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
 --
 -- Host: 127.0.0.1    Database: lmsystem
@@ -111,7 +109,6 @@ CREATE TABLE `book_loans` (
   `Date_Out` date DEFAULT NULL,
   `Due_Date` date DEFAULT NULL,
   `Returned_Date` date DEFAULT NULL,
-  `Late` int DEFAULT '0',
   PRIMARY KEY (`Book_Id`,`Branch_Id`,`Card_No`),
   KEY `Branch_Id` (`Branch_Id`),
   KEY `Card_No` (`Card_No`),
@@ -127,28 +124,9 @@ CREATE TABLE `book_loans` (
 
 LOCK TABLES `book_loans` WRITE;
 /*!40000 ALTER TABLE `book_loans` DISABLE KEYS */;
-INSERT INTO `book_loans` VALUES (1,1,123456,'2022-01-01','2022-02-01','2022-02-01',0),(2,1,789012,'2022-01-02','2022-02-02',NULL,0),(3,2,345678,'2022-01-03','2022-02-03',NULL,0),(4,3,901234,'2022-01-04','2022-02-04','2022-02-04',0),(5,1,567890,'2022-01-05','2022-02-05','2022-02-09',1),(6,2,234567,'2022-01-06','2022-02-06','2022-02-10',1),(7,2,890123,'2022-01-07','2022-02-07','2022-03-08',1),(8,3,456789,'2022-01-08','2022-02-08','2022-03-10',1),(9,1,111111,'2022-01-09','2022-02-09','2022-02-06',0),(10,2,222222,'2022-01-10','2022-02-10','2022-02-07',0),(11,1,333333,'2022-03-01','2022-03-08','2022-03-08',0),(12,3,444444,'2022-03-03','2022-03-10','2022-03-10',0),(13,3,555555,'2022-02-03','2022-03-03','2022-02-18',0),(14,1,565656,'2022-01-14','2022-02-14','2022-03-31',1),(15,3,676767,'2022-01-15','2022-02-15','2022-02-21',1),(16,2,787878,'2022-03-05','2022-03-12','2022-03-24',1),(17,3,989898,'2022-03-23','2022-03-30','2022-03-30',0),(18,3,121212,'2022-01-18','2022-02-18','2022-02-18',0),(19,1,232323,'2022-03-24','2022-03-31','2022-03-31',0),(20,3,343434,'2022-01-21','2022-02-21','2022-02-21',0),(21,3,454545,'2022-01-24','2022-02-24','2022-02-24',0);
+INSERT INTO `book_loans` VALUES (1,1,123456,'2022-01-01','2022-02-01','2022-02-01'),(2,1,789012,'2022-01-02','2022-02-02',NULL),(3,2,345678,'2022-01-03','2022-02-03',NULL),(4,3,901234,'2022-01-04','2022-02-04','2022-02-04'),(5,1,567890,'2022-01-05','2022-02-05','2022-02-09'),(6,2,234567,'2022-01-06','2022-02-06','2022-02-10'),(7,2,890123,'2022-01-07','2022-02-07','2022-03-08'),(8,3,456789,'2022-01-08','2022-02-08','2022-03-10'),(9,1,111111,'2022-01-09','2022-02-09','2022-02-06'),(10,2,222222,'2022-01-10','2022-02-10','2022-02-07'),(11,1,333333,'2022-03-01','2022-03-08','2022-03-08'),(12,3,444444,'2022-03-03','2022-03-10','2022-03-10'),(13,3,555555,'2022-02-03','2022-03-03','2022-02-18'),(14,1,565656,'2022-01-14','2022-02-14','2022-03-31'),(15,3,676767,'2022-01-15','2022-02-15','2022-02-21'),(16,2,787878,'2022-03-05','2022-03-12','2022-03-24'),(17,3,989898,'2022-03-23','2022-03-30','2022-03-30'),(18,3,121212,'2022-01-18','2022-02-18','2022-02-18'),(19,1,232323,'2022-03-24','2022-03-31','2022-03-31'),(20,3,343434,'2022-01-21','2022-02-21','2022-02-21'),(21,3,454545,'2022-01-24','2022-02-24','2022-02-24');
 /*!40000 ALTER TABLE `book_loans` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `after_book_loan` AFTER INSERT ON `book_loans` FOR EACH ROW BEGIN
-    UPDATE BOOK_COPIES
-    SET No_Of_Copies = No_Of_Copies - 1
-    WHERE Book_Id = NEW.Book_Id AND Branch_Id = NEW.Branch_Id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `borrower`
@@ -187,7 +165,6 @@ CREATE TABLE `library_branch` (
   `Branch_Id` int NOT NULL AUTO_INCREMENT,
   `Branch_Name` varchar(255) DEFAULT NULL,
   `Branch_Address` varchar(255) DEFAULT NULL,
-  `LateFee` decimal(5,2) DEFAULT NULL,
   PRIMARY KEY (`Branch_Id`),
   UNIQUE KEY `Branch_Name` (`Branch_Name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -199,7 +176,7 @@ CREATE TABLE `library_branch` (
 
 LOCK TABLES `library_branch` WRITE;
 /*!40000 ALTER TABLE `library_branch` DISABLE KEYS */;
-INSERT INTO `library_branch` VALUES (1,'Main Branch','123 Main St, New York, NY 10003',0.50),(2,'West Branch','456 West St, Arizona, AR 70622',0.60),(3,'East Branch','789 East St, New Jersy, NY 32032',0.55),(4,'North Branch','456 NW, Irving, TX 76100',0.65),(5,'UTA Branch','123 Cooper St, Arlington TX 76101',0.70);
+INSERT INTO `library_branch` VALUES (1,'Main Branch','123 Main St, New York, NY 10003'),(2,'West Branch','456 West St, Arizona, AR 70622'),(3,'East Branch','789 East St, New Jersy, NY 32032'),(4,'North Branch','456 NW, Irving, TX 76100'),(5,'UTA Branch','123 Cooper St, Arlington TX 76101');
 /*!40000 ALTER TABLE `library_branch` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -229,51 +206,12 @@ INSERT INTO `publisher` VALUES ('Allen & Unwin','212-782-9001','22 New Wharf Rd,
 UNLOCK TABLES;
 
 --
--- Temporary view structure for view `vbookloaninfo`
---
-
-DROP TABLE IF EXISTS `vbookloaninfo`;
-/*!50001 DROP VIEW IF EXISTS `vbookloaninfo`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `vbookloaninfo` AS SELECT 
- 1 AS `Card_No`,
- 1 AS `Borrower Name`,
- 1 AS `Date_Out`,
- 1 AS `Due_Date`,
- 1 AS `Returned_Date`,
- 1 AS `TotalDays`,
- 1 AS `Book Title`,
- 1 AS `Days Returned Late`,
- 1 AS `Branch_Id`,
- 1 AS `LateFeeBalance`*/;
-SET character_set_client = @saved_cs_client;
-
---
 -- Dumping events for database 'lmsystem'
 --
 
 --
 -- Dumping routines for database 'lmsystem'
 --
-
---
--- Final view structure for view `vbookloaninfo`
---
-
-/*!50001 DROP VIEW IF EXISTS `vbookloaninfo`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `vbookloaninfo` AS select `bl`.`Card_No` AS `Card_No`,`br`.`Name` AS `Borrower Name`,`bl`.`Date_Out` AS `Date_Out`,`bl`.`Due_Date` AS `Due_Date`,`bl`.`Returned_Date` AS `Returned_Date`,(to_days(ifnull(`bl`.`Returned_Date`,curdate())) - to_days(`bl`.`Date_Out`)) AS `TotalDays`,`bk`.`Title` AS `Book Title`,(case when ((`bl`.`Returned_Date` is null) or (`bl`.`Returned_Date` <= `bl`.`Due_Date`)) then 0 else (to_days(`bl`.`Returned_Date`) - to_days(`bl`.`Due_Date`)) end) AS `Days Returned Late`,`bl`.`Branch_Id` AS `Branch_Id`,(case when ((`bl`.`Returned_Date` is null) or (`bl`.`Returned_Date` <= `bl`.`Due_Date`)) then 0 else ((to_days(`bl`.`Returned_Date`) - to_days(`bl`.`Due_Date`)) * `lb`.`LateFee`) end) AS `LateFeeBalance` from (((`book_loans` `bl` join `borrower` `br` on((`bl`.`Card_No` = `br`.`Card_No`))) join `book` `bk` on((`bl`.`Book_Id` = `bk`.`Book_Id`))) join `library_branch` `lb` on((`bl`.`Branch_Id` = `lb`.`Branch_Id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -284,4 +222,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-12-05  1:57:01
+-- Dump completed on 2023-12-05  2:28:46
