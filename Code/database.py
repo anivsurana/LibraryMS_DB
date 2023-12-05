@@ -173,8 +173,6 @@ def list_late_book_loans(start_date, end_date, tree):
         conn.close()
 
 
-
-# database.py
 def list_borrower_info(search_criteria, tree):
     conn = connect_to_db()
     cursor = conn.cursor()
@@ -223,15 +221,15 @@ def list_book_info(borrower_id=None, book_id=None, book_title=None):
         vbookloaninfo v JOIN BOOK_LOANS BL ON v.Card_No = BL.Card_No
     """
 
-    params = [borrower_id]  # Ensure this is a list
+    params = [borrower_id] 
     conditions = ["v.Card_No = %s"]
 
     if book_id:
         conditions.append("BL.Book_id = %s")
-        params.append(book_id)  # Append to the list
+        params.append(book_id) 
     if book_title:
         conditions.append("`Book Title` LIKE %s")
-        params.append(f"%{book_title}%")  # Append to the list
+        params.append(f"%{book_title}%")
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
@@ -242,7 +240,7 @@ def list_book_info(borrower_id=None, book_id=None, book_title=None):
     query += " ORDER BY `LateFeeBalance` DESC"
 
     try:
-        cursor.execute(query, params)  # Pass the list to the execute method
+        cursor.execute(query, params)
         rows = cursor.fetchall()
         return rows
     except mysql.connector.Error as err:
