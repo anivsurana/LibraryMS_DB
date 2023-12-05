@@ -235,7 +235,6 @@ def search_borrower_info(criteria, tree):
 
 # gui_components.py
 
-# Function to set up the 'List Book Information' frame
 def setup_list_book_info_frame(root):
     clear_frame(root)
     frame = ttk.Frame(root, padding="10")
@@ -266,6 +265,7 @@ def setup_list_book_info_frame(root):
 
     ttk.Button(frame, text="Search", command=lambda: search_book_info(
         borrower_id_entry.get(),
+        book_id_entry.get(),
         book_title_entry.get(),
         result_tree
     )).grid(row=3, column=1, padx=10, pady=10, sticky='ew')
@@ -281,14 +281,14 @@ def setup_list_book_info_frame(root):
     # Set focus to the borrower ID entry
     borrower_id_entry.focus()
 
-def search_book_info(borrower_id, book_title, tree):
+def search_book_info(borrower_id, book_id, book_title, tree):
     # Clear the treeview
     for i in tree.get_children():
         tree.delete(i)
 
     # Call the database function and pass the treeview widget
     # The database function is expected to return a list of tuples
-    books = list_book_info(borrower_id, book_title) 
+    books = list_book_info(borrower_id, book_id, book_title) 
     
     # Insert the data into the treeview
     for book in books:

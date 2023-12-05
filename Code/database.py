@@ -208,27 +208,27 @@ def list_borrower_info(search_criteria, tree):
         conn.close()
 
 
-def list_book_info(borrower_id=None, book_title=None):
+def list_book_info(borrower_id=None, book_id=None, book_title=None):
     conn = connect_to_db()
     cursor = conn.cursor()
 
     query = """
     SELECT 
-        Card_No AS 'Borrower ID', 
+        v.Card_No AS 'Borrower ID', 
         `Borrower Name` AS 'Borrower Name', 
         `Book Title` AS 'Title', 
-        Branch_Id AS 'Branch ID', 
+        v.Branch_Id AS 'Branch ID', 
         COALESCE(CONCAT('$', FORMAT(LateFeeBalance, 2)), 'Non-Applicable') AS 'Late Fee'
     FROM 
-        vbookloaninfo
+        vbookloaninfo v JOIN BOOK_LOANS BL ON v.Card_No = BL.Card_No
     """
 
-    params = []  # Ensure this is a list
-    conditions = []
+    params = [borrower_id]  # Ensure this is a list
+    conditions = ["v.Card_No = %s"]
 
-    if borrower_id:
-        conditions.append("Card_No = %s")
-        params.append(borrower_id)  # Append to the list
+    if book_id:
+        conditions.append("BL.Book_id = %s")
+        params.append(book_id)  # Append to the list
     if book_title:
         conditions.append("`Book Title` LIKE %s")
         params.append(f"%{book_title}%")  # Append to the list
@@ -236,6 +236,9 @@ def list_book_info(borrower_id=None, book_title=None):
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
+    if book_id is not None:
+        query += " GROUP BY v.Card_No, `Borrower Name`, `Book Title`, v.Branch_Id, LateFeeBalance"
+    
     query += " ORDER BY `LateFeeBalance` DESC"
 
     try:
